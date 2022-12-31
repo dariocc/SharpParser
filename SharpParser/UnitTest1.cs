@@ -16,14 +16,17 @@ record ParseError(string Reason);
 
 class Capturer
 {
-    private readonly Func<string, Token> tokenGenerator;
+    private readonly Func<string, Token?> tokenMatcher;
 
-    public Capturer(Func<string, Token> tokenGenerator)
+    public Capturer(Func<string, Token?> tokenMatcher)
     {
-        this.tokenGenerator = tokenGenerator;
+        this.tokenMatcher = tokenMatcher;
     }
 
-    public Token GetToken(string raw) => tokenGenerator(raw);
+    public Token? GetToken(string raw) => tokenMatcher(raw);
+
+    public Capturer CaseSensitiveWord(string word, Func<string, Token> tokenFactory) => new Capturer(raw => string.Equals(raw, word, StringComparison.InvariantCulture) ? tokenFactory(word) : null);
+    public Capturer CaseInsensitiveWord(string word, Func<string, Token> tokenFactory) => new Capturer(raw => string.Equals(raw, word, StringComparison.InvariantCultureIgnoreCase) ? tokenFactory(word) : null);
 }
 
 class Parser
@@ -42,7 +45,9 @@ class Parser
 
     public static Parser Parse(string code)
     {
-        
+        var capturers = new Capturer[] {
+            new Capturer(raw => raw == "Program" ? new Keyword("Program") : null),
+        };
     }
 }
 
